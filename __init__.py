@@ -26,6 +26,21 @@ class JqueryForm(forms.Form):
             field_dict = {}
             self.fields[key].widget.attrs['msg'] = {}
 
+
+            # emails
+            if self.fields[key].__class__.__name__ == 'EmailField':
+                field_dict['email'] = True
+                self.fields[key].widget.attrs['msg']['email'] = "%s" % get_error_tags("Invalid email address")
+
+            elif self.fields[key].__class__.__name__ == 'DateField':
+                field_dict['date'] = True
+                self.fields[key].widget.attrs['msg']['date'] = "%s" % get_error_tags("Invalid date")
+
+            elif self.fields[key].__class__.__name__ == 'URLField':
+                field_dict['url'] = True
+                self.fields[key].widget.attrs['msg']['url'] = "%s" % get_error_tags("Invalid url")
+
+
             # Required
             if hasattr(self.fields[key], 'required'):
                 field_dict['required'] = True
@@ -47,11 +62,6 @@ class JqueryForm(forms.Form):
                     self.fields[key].widget.attrs['msg']['maxlength'] = "%s" % (
                         get_error_tags("%s characters maximum") % self.fields[key].max_length)
 
-
-            # emails
-            if self.fields[key].__class__.__name__ == 'EmailField':
-                field_dict['email'] = True
-                self.fields[key].widget.attrs['msg']['email'] = "%s" % get_error_tags("Invalid email address")
 
             # field same value than...
             if 'equals' in self.fields[key].widget.attrs:
