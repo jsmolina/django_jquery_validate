@@ -60,11 +60,7 @@ class JqueryForm(forms.Form):
                 equals_name = self.fields[equals_field].label
                 self.fields[key].widget.attrs['msg']['equalTo'] = get_error_tags("Must be equal to %s") % equals_name
 
-            """ if depends on checkbox is checked e.g:
-             depends: function(element) {
-               return $("#contactform_email:checked")
-             }
-            """
+
             if 'depends' in self.fields[key].widget.attrs:
                 field_dict['depends'] = "#%s" % self.fields[key].widget.attrs['depends']
 
@@ -72,8 +68,14 @@ class JqueryForm(forms.Form):
             # see http://stackoverflow.com/questions/241145/jquery-validate-plugin-how-to-create-a-simple-custom-rule
             if 'custom' in self.fields[key].widget.attrs:
                 field_dict[self.fields[key].widget.attrs['custom']] = True
+                # todo generate js code for custom
 
-            self.fields[key].widget.attrs.update({'cls': dumps(field_dict)})
+            if 'remote' in self.fields[key].widget.attrs:
+                field_dict['remote'] = self.fields[key].widget.attrs['remote']['url']
+                self.fields[key].widget.attrs['msg']['remote'] = get_error_tags(self.fields[key].widget.attrs['remote']['message'])
+
+            self.fields[key].widget.attrs.update({'cls': dumps(field_dict, sort_keys=True)})
+            print  dumps(field_dict, sort_keys=True)
 
     def render_field(self, field):
         """
