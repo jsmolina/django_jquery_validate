@@ -27,6 +27,8 @@ def validate(form, form_id):
     for field in form:
         validate_dict['rules'][field.name] = loads(field.field.widget.attrs["cls"])
         del field.field.widget.attrs["cls"]
+        if 'remote' in field.field.widget.attrs:
+            del field.field.widget.attrs["remote"]
 
     for field in form:
         validate_dict['messages'][field.name] = {}
@@ -48,7 +50,7 @@ def validate(form, form_id):
         "this.defaultShowErrors();"+ \
                                   "$('label.error').parent().addClass('status-error')"+ \
                                   "}##"
-    validate_str += "   $('#%s').validate(%s);" % (form_id, dumps(validate_dict))
+    validate_str += "   $('#%s').validate(%s);" % (form_id, dumps(validate_dict, sort_keys=True))
 
     validate_str += "});"
     validate_str += '</script>'
