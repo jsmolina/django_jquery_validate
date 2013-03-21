@@ -12,6 +12,15 @@ from simplejson import dumps, loads
 
 register = template.Library()
 
+@register.simple_tag
+def validate_server(form, field):
+    error_str = ""
+    
+    if field in form.errors:
+        error_str = """<label for="id_%s" class="error" style="display: inline;">
+            <div class="error-wrapper "><p class="error"> %s </p></div>
+            </label>""" % (field, form.errors[field][0])
+    return error_str
 
 @register.simple_tag
 def validate(form, form_id):
