@@ -19,3 +19,13 @@ Then in template, you just specify the place where you want to have the jquery c
 ```python
 {% load jquery_validate %}{% validate form "signup-form" %}
 ```
+
+Showing server-side validation errors in template is easy (e.g. image size for a file):
+```python 
+ {% validate_server form "fieldname" %}
+```
+Which can be forced from view:
+```python 
+  if form.is_valid():
+    form._errors["fieldname"] = ErrorList([u"Invalid image size."])
+```
