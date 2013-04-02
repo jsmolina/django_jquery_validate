@@ -12,7 +12,8 @@ You just create a new form, using normal django forms, but extending JqueryForm 
 ```python
  class RegisterForm(JqueryForm):
     email = forms.EmailField(label="Type your email so we can confirm you're there", required=True, widget=forms.TextInput(attrs={
-        'remote': {'url': "/user/mail-exists", 'message': "Email already taken"}}))
+        'remote': {'url': "/user/mail-exists", 'message': "Email already taken"}})),
+    name = forms.RegexField(regex=r'[a-zA-Z0-9]+', error_messages={"invalid": "Use only alphanumeric characters"})
 ```
 
 Then in template, you just specify the place where you want to have the jquery code for templatetag:
