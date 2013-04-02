@@ -30,16 +30,18 @@ class JqueryForm(forms.Form):
             # emails
             if self.fields[key].__class__.__name__ == 'EmailField':
                 field_dict['email'] = True
-                self.fields[key].widget.attrs['msg']['email'] = "%s" % get_error_tags("Invalid email address")
+                self.fields[key].widget.attrs['msg']['email'] = "%s" % get_error_tags(self.fields[key].error_messages["invalid"])
 
             elif self.fields[key].__class__.__name__ == 'DateField':
                 field_dict['date'] = True
-                self.fields[key].widget.attrs['msg']['date'] = "%s" % get_error_tags("Invalid date")
+                self.fields[key].widget.attrs['msg']['date'] = "%s" % get_error_tags(self.fields[key].error_messages["invalid"])
 
             elif self.fields[key].__class__.__name__ == 'URLField':
                 field_dict['url'] = True
-                self.fields[key].widget.attrs['msg']['url'] = "%s" % get_error_tags("Invalid url")
-
+                self.fields[key].widget.attrs['msg']['url'] = "%s" % get_error_tags(self.fields[key].error_messages["invalid"])
+            elif self.fields[key].__class__.__name__ == 'RegexField':
+                field_dict['pattern'] = "##/^" + self.fields[key].regex.pattern + "$/i##"
+                self.fields[key].widget.attrs['msg']['pattern'] = "%s" % get_error_tags(self.fields[key].error_messages["invalid"])
 
             # Required
             if hasattr(self.fields[key], 'required'):

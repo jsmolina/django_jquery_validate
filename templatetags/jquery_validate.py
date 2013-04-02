@@ -15,7 +15,7 @@ register = template.Library()
 @register.simple_tag
 def validate_server(form, field):
     error_str = ""
-    
+
     if field in form.errors:
         error_str = """<label for="id_%s" class="error" style="display: inline;">
             <div class="error-wrapper "><p class="error"> %s </p></div>
@@ -47,7 +47,9 @@ def validate(form, form_id):
 
         del field.field.widget.attrs['msg']
 
+
     validate_str += "<script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>"
+    validate_str += "<script type='text/javascript' src='/static/js/additional-methods.min.js'></script>"
     validate_str += "<script type='text/javascript'>"
     validate_str += "$(document).ready(function() {"
     validate_dict['success'] = "##function(label) { "+ \

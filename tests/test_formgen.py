@@ -7,6 +7,7 @@ from django.forms import Form
 from ..templatetags import jquery_validate
 
 
+
 class FormGen(TestCase):
     def setUp(self):
         try:
@@ -48,6 +49,7 @@ class FormGen(TestCase):
             'email': forms.EmailField(label="Your email", required=True,
                                       widget=forms.TextInput(attrs={
                                           'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"}})),
+            'test' : forms.RegexField(regex=r'[a-zA-Z0-9]+'),
             'password': forms.CharField(widget=forms.PasswordInput(attrs={'equals': 'id_password2'}),
                                         label="password",
                                         required=True,
@@ -77,6 +79,8 @@ class FormGen(TestCase):
                 self.assertTrue(cls['required'])
                 self.assertEquals(cls['minlength'], 8)
                 self.assertEquals(cls['maxlength'], 30)
+            elif key is "test":
+                self.assertEquals(cls['pattern'], "##/^[a-zA-Z0-9]+$/i##")
 
     def test_template_tag(self):
         """
@@ -94,12 +98,16 @@ class FormGen(TestCase):
             'password2': forms.CharField(widget=forms.PasswordInput(), label="Confirm your password",
                                          required=True, help_text="One more time please...", max_length=30,
                                          min_length=8),
-            'country': forms.Select()
+            'country': forms.Select(),
+
+            'test' : forms.RegexField(regex=r'[a-zA-Z0-9]+'),
         })
         form = RegisterForm()
         rendered = jquery_validate.validate(form, "myformid")
+
         self.assertRegexpMatches(rendered, '"email": {"email": true, "remote": "/user/mail-exists/", "required": true}')
         self.assertRegexpMatches(rendered, "\$\('#myformid'\).validate\({")
         self.assertRegexpMatches(rendered, '"password": {"equalTo": "#id_password2", "maxlength": 30, "minlength": 8, "required": true}')
         self.assertRegexpMatches(rendered, '"password2": {"maxlength": 30, "minlength": 8, "required": true}')
+        self.assertRegexpMatches(rendered, '"test": {"pattern"')
 
