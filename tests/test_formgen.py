@@ -3,16 +3,14 @@ from .. import JqueryForm
 from django import forms
 from django.conf import settings
 from simplejson import dumps, loads
-from django.forms import Form
 from ..templatetags import jquery_validate
-
-
+from django.utils.translation import ugettext as _
 
 class FormGen(TestCase):
     def setUp(self):
         try:
             settings.configure(DEBUG=True, USE_I18N=False, TEMPLATE_DEBUG=True,
-                           TEMPLATE_DIRS=('/home/web-apps/myapp', '/home/web-apps/base'))
+                               TEMPLATE_DIRS=('/home/web-apps/myapp', '/home/web-apps/base'))
         except RuntimeError as e:
             pass
 
@@ -21,7 +19,12 @@ class FormGen(TestCase):
         This test validates jquery preparation of module
         """
         CommentForm = type("CommentForm", (JqueryForm,), {
-            'email': forms.EmailField(min_length=2, max_length=5),
+            'email': forms.EmailField(min_length=2, max_length=5, widget=forms.TextInput(attrs={
+                'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"},
+                'custom': {'method': 'require_from_group', 'value': '[1,".mailgroup"]'},
+                'class': 'mailgroup',
+            },
+            ), error_messages={"invalid": _("Invalid email address"), "min_length": _("At least 2 chars"), "max_length": _("Max 5 chars"), 'custom': "Custom message"}),
             'url': forms.URLField(),
         })
         form = CommentForm()
@@ -29,7 +32,7 @@ class FormGen(TestCase):
         for key in form.fields.keys():
             msg = form.fields[key].widget.attrs['msg']
             cls = loads(form.fields[key].widget.attrs['cls'])
-
+            print msg
             if key is "email":
                 self.assertTrue(cls['email'])
                 self.assertTrue(cls['required'])
@@ -38,6 +41,7 @@ class FormGen(TestCase):
                 self.assertIn('minlength', msg)
                 self.assertIn('required', msg)
                 self.assertIn('maxlength', msg)
+                self.assertIn('require_from_group', msg)
             elif key is "url":
                 self.assertTrue(cls['url'])
 
@@ -48,8 +52,13 @@ class FormGen(TestCase):
         RegisterForm = type("CommentForm", (JqueryForm,), {
             'email': forms.EmailField(label="Your email", required=True,
                                       widget=forms.TextInput(attrs={
-                                          'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"}})),
-            'test' : forms.RegexField(regex=r'[a-zA-Z0-9]+'),
+                                          'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"},
+                                          'custom': {'method': 'require_from_group', 'value': '[1,".mailgroup"]'},
+                                      }
+                                      )
+
+            ),
+            'test': forms.RegexField(regex=r'[a-zA-Z0-9]+'),
             'password': forms.CharField(widget=forms.PasswordInput(attrs={'equals': 'id_password2'}),
                                         label="password",
                                         required=True,
@@ -70,6 +79,7 @@ class FormGen(TestCase):
                 self.assertTrue(cls['email'])
                 self.assertEquals(cls['remote'], "/user/mail-exists/")
                 self.assertTrue(cls['required'])
+                self.assertEquals(cls['require_from_group'], '[1,".mailgroup"]')
             elif key is "password":
                 self.assertEquals(cls['equalTo'], "#id_password2")
                 self.assertTrue(cls['required'])
@@ -100,14 +110,15 @@ class FormGen(TestCase):
                                          min_length=8),
             'country': forms.Select(),
 
-            'test' : forms.RegexField(regex=r'[a-zA-Z0-9]+'),
+            'test': forms.RegexField(regex=r'[a-zA-Z0-9]+'),
         })
         form = RegisterForm()
         rendered = jquery_validate.validate(form, "myformid")
 
         self.assertRegexpMatches(rendered, '"email": {"email": true, "remote": "/user/mail-exists/", "required": true}')
         self.assertRegexpMatches(rendered, "\$\('#myformid'\).validate\({")
-        self.assertRegexpMatches(rendered, '"password": {"equalTo": "#id_password2", "maxlength": 30, "minlength": 8, "required": true}')
+        self.assertRegexpMatches(rendered,
+                                 '"password": {"equalTo": "#id_password2", "maxlength": 30, "minlength": 8, "required": true}')
         self.assertRegexpMatches(rendered, '"password2": {"maxlength": 30, "minlength": 8, "required": true}')
         self.assertRegexpMatches(rendered, '"test": {"pattern"')
 
