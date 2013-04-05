@@ -39,6 +39,9 @@ def validate(form, form_id):
         if 'remote' in field.field.widget.attrs:
             del field.field.widget.attrs["remote"]
 
+        if 'custom' in field.field.widget.attrs:
+            del field.field.widget.attrs["custom"]
+
     for field in form:
         validate_dict['messages'][field.name] = {}
 
