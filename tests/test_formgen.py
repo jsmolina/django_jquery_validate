@@ -21,7 +21,7 @@ class FormGen(TestCase):
         CommentForm = type("CommentForm", (JqueryForm,), {
             'email': forms.EmailField(min_length=2, max_length=5, widget=forms.TextInput(attrs={
                 'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"},
-                'custom': {'method': 'require_from_group', 'value': '[1,".mailgroup"]'},
+                'custom': {'method': 'require_from_group', 'value': '##[1,".mailgroup"]##'},
                 'class': 'mailgroup',
             },
             ), error_messages={"invalid": _("Invalid email address"), "min_length": _("At least 2 chars"), "max_length": _("Max 5 chars"), 'custom': "Custom message"}),
