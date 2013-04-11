@@ -31,7 +31,7 @@ def validate(form, form_id):
     :return:
     """
     validate_str = ""
-    validate_dict = {'onkeyup': False,  'rules': {}, 'messages': {}, "success": ""}
+    validate_dict = {'onkeyup': False,  'rules': {}, 'messages': {}, "success": "", 'ignore': '.ignore'}
 
     for field in form:
         validate_dict['rules'][field.name] = loads(field.field.widget.attrs["cls"])
