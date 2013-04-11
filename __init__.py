@@ -75,7 +75,7 @@ class JqueryForm(forms.Form):
             if 'equals' in self.fields[key].widget.attrs:
                 field_dict['equalTo'] = "#%s" % self.fields[key].widget.attrs['equals']
                 equals_field = self.fields[key].widget.attrs['equals'].replace('id_', '')
-                equals_name = self.fields[equals_field].label
+
                 if "equals" in self.fields[key].error_messages:
                     self.fields[key].widget.attrs['msg']['equalTo'] = "%s" % get_error_tags(
                         self.fields[key].error_messages["equals"])
