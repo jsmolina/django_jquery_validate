@@ -1,9 +1,9 @@
-from django.test import TestCase
-from libs.jquery_validate import JqueryForm
+from unittest import TestCase
+from . import JqueryForm
 from django import forms
 from django.conf import settings
 from simplejson import dumps, loads
-from libs.jquery_validate.templatetags import jquery_validate
+from .templatetags import jquery_validate
 from django.utils.translation import ugettext as _
 
 
