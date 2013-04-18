@@ -1,16 +1,8 @@
-
-from django.template import loader, Node, Variable
-from django.utils.encoding import smart_str, smart_unicode
-from django.template.defaulttags import url
-from django.template import VariableDoesNotExist
-
-
 from django import template
-
 from simplejson import dumps, loads
 
-
 register = template.Library()
+
 
 @register.simple_tag
 def validate_server(form, field):
@@ -21,6 +13,7 @@ def validate_server(form, field):
             <div class="error-wrapper "><p class="error"> %s </p></div>
             </label>""" % (field, form.errors[field][0])
     return error_str
+
 
 @register.simple_tag
 def validate(form, form_id):
@@ -50,19 +43,17 @@ def validate(form, form_id):
 
         del field.field.widget.attrs['msg']
 
-
     validate_str += "<script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>"
     validate_str += "<script type='text/javascript' src='/static/js/additional-methods.min.js'></script>"
     validate_str += "<script type='text/javascript'>"
     validate_str += "$(document).ready(function() {"
-    validate_dict['success'] = "##function(label) { "+ \
-                               "    label.removeClass('error'); label.parent().removeClass('status-error'); label.remove();"+ \
+    validate_dict['success'] = "##function(label) { " + \
+                               "    label.removeClass('error'); label.parent().removeClass('status-error'); label.remove();" + \
                                "}##"
 
-
     validate_dict['showErrors'] = "## function(errorMap, errorList) {" +\
-        "this.defaultShowErrors();"+ \
-                                  "$('label.error').parent().addClass('status-error')"+ \
+        "this.defaultShowErrors();" + \
+                                  "$('label.error').parent().addClass('status-error')" + \
                                   "}##"
     validate_str += "   $('#%s').validate(%s);" % (form_id, dumps(validate_dict, sort_keys=True))
 

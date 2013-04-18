@@ -1,12 +1,13 @@
-from unittest import TestCase
-from .. import JqueryForm
+from django.test import TestCase
+from libs.jquery_validate import JqueryForm
 from django import forms
 from django.conf import settings
 from simplejson import dumps, loads
-from ..templatetags import jquery_validate
+from libs.jquery_validate.templatetags import jquery_validate
 from django.utils.translation import ugettext as _
 
-class FormGen(TestCase):
+
+class JqueryGenTest(TestCase):
     def setUp(self):
         try:
             settings.configure(DEBUG=True, USE_I18N=False, TEMPLATE_DEBUG=True,
@@ -21,18 +22,18 @@ class FormGen(TestCase):
         CommentForm = type("CommentForm", (JqueryForm,), {
             'email': forms.EmailField(min_length=2, max_length=5, widget=forms.TextInput(attrs={
                 'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"},
-                'custom': {'method': 'require_from_group', 'value': '##[1,".mailgroup"]##'},
+                'custom': {'method': 'require_from_group', 'value': '[1,".mailgroup"]'},
                 'class': 'mailgroup',
-            },
-            ), error_messages={"invalid": _("Invalid email address"), "min_length": _("At least 2 chars"), "max_length": _("Max 5 chars"), 'custom': "Custom message"}),
+                },
+                                                                                         ), error_messages={"invalid": _("Invalid email address"), "min_length": _("At least 2 chars"), "max_length": _("Max 5 chars"), 'custom': "Custom message"}),
             'url': forms.URLField(),
-        })
+            })
         form = CommentForm()
 
         for key in form.fields.keys():
             msg = form.fields[key].widget.attrs['msg']
             cls = loads(form.fields[key].widget.attrs['cls'])
-            print msg
+
             if key is "email":
                 self.assertTrue(cls['email'])
                 self.assertTrue(cls['required'])
@@ -54,7 +55,7 @@ class FormGen(TestCase):
                                       widget=forms.TextInput(attrs={
                                           'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"},
                                           'custom': {'method': 'require_from_group', 'value': '[1,".mailgroup"]'},
-                                      }
+                                          }
                                       )
 
             ),
@@ -111,7 +112,7 @@ class FormGen(TestCase):
             'country': forms.Select(),
 
             'test': forms.RegexField(regex=r'[a-zA-Z0-9]+'),
-        })
+            })
         form = RegisterForm()
         rendered = jquery_validate.validate(form, "myformid")
 
