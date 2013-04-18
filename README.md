@@ -30,3 +30,7 @@ Which can be forced from view:
   if form.is_valid():
     form._errors["fieldname"] = ErrorList([u"Invalid image size."])
 ```
+
+Test
+=====
+Just execute nosetests in django_jquery_validate
