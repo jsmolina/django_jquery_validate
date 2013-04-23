@@ -32,7 +32,7 @@ class JqueryGenTest(TestCase):
 
         for key in form.fields.keys():
             msg = form.fields[key].widget.attrs['msg']
-            cls = loads(form.fields[key].widget.attrs['cls'])
+            cls = form.fields[key].widget.attrs['cls']
 
             if key is "email":
                 self.assertTrue(cls['email'])
@@ -74,7 +74,7 @@ class JqueryGenTest(TestCase):
 
         for key in form.fields.keys():
             msg = form.fields[key].widget.attrs['msg']
-            cls = loads(form.fields[key].widget.attrs['cls'])
+            cls = form.fields[key].widget.attrs['cls']
 
             if key is "email":
                 self.assertTrue(cls['email'])
