@@ -27,7 +27,7 @@ def validate(form, form_id):
     validate_dict = {'onkeyup': False,  'rules': {}, 'messages': {}, "success": "", 'ignore': '.ignore'}
 
     for field in form:
-        validate_dict['rules'][field.name] = loads(field.field.widget.attrs["cls"])
+        validate_dict['rules'][field.name] = field.field.widget.attrs["cls"]
         del field.field.widget.attrs["cls"]
         if 'remote' in field.field.widget.attrs:
             del field.field.widget.attrs["remote"]
@@ -61,5 +61,6 @@ def validate(form, form_id):
     validate_str += '</script>'
     validate_str = validate_str.replace("\"##", "")
     validate_str = validate_str.replace("##\"", "")
+    validate_str = validate_str.replace("\\\\", "\\")
 
     return validate_str

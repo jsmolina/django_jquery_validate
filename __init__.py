@@ -96,6 +96,6 @@ class JqueryForm(forms.Form):
                 self.fields[key].widget.attrs['msg']['remote'] = get_error_tags(
                     self.fields[key].widget.attrs['remote']['message'])
 
-            self.fields[key].widget.attrs.update({'cls': dumps(field_dict, sort_keys=True)})
+            self.fields[key].widget.attrs.update({'cls': field_dict})
 
 
