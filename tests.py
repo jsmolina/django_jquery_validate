@@ -24,8 +24,10 @@ class JqueryGenTest(TestCase):
                 'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"},
                 'custom': {'method': 'require_from_group', 'value': '[1,".mailgroup"]'},
                 'class': 'mailgroup',
-                },
-                                                                                         ), error_messages={"invalid": _("Invalid email address"), "min_length": _("At least 2 chars"), "max_length": _("Max 5 chars"), 'custom': "Custom message"}),
+                },), error_messages={"invalid": _("Invalid email address"),
+                                     "min_length": _("At least 2 chars"),
+                                     "max_length": _("Max 5 chars"),
+                                     'custom': "Custom message"}),
             'url': forms.URLField(),
             })
         form = CommentForm()
@@ -59,15 +61,21 @@ class JqueryGenTest(TestCase):
                                       )
 
             ),
-            'test': forms.RegexField(regex=r'[a-zA-Z0-9]+'),
+            'test': forms.RegexField(regex=r'[a-zA-Z0-9]+', error_messages={"regex_pattern": 'Do not matches',
+                                                                            'min_length': 'Should have between 8 and 30'}),
             'password': forms.CharField(widget=forms.PasswordInput(attrs={'equals': 'id_password2'}),
                                         label="password",
                                         required=True,
                                         help_text="8 to 30",
-                                        max_length=30, min_length=8),
+                                        max_length=30, min_length=8,
+                                        error_messages={'min_length': 'Should have at least 8',
+                                                        'max_length': 'Should have at most 30',
+                                                        'equals': 'Must be equal to password 2'}),
             'password2': forms.CharField(widget=forms.PasswordInput(), label="Confirm your password",
                                          required=True, help_text="One more time please...", max_length=30,
-                                         min_length=8),
+                                         min_length=8, error_messages={'min_length': 'Should have at least 8',
+                                                        'max_length': 'Should have at most 30',
+                                                        'equals': 'Must be equal to password 2'}),
             'country': forms.Select()
         })
         form = RegisterForm()
@@ -91,7 +99,7 @@ class JqueryGenTest(TestCase):
                 self.assertEquals(cls['minlength'], 8)
                 self.assertEquals(cls['maxlength'], 30)
             elif key is "test":
-                self.assertEquals(cls['pattern'], "##/^[a-zA-Z0-9]+$/i##")
+                self.assertEquals(cls['pattern'], "##/[a-zA-Z0-9]+/i##")
 
     def test_template_tag(self):
         """
@@ -105,13 +113,17 @@ class JqueryGenTest(TestCase):
                                         label="Choose a password",
                                         required=True,
                                         help_text="Use between 8 and 30. Oh! And use at least one number",
-                                        max_length=30, min_length=8),
+                                        max_length=30, min_length=8, error_messages={'min_length': 'Should have at least 8',
+                                                        'max_length': 'Should have at most 30',
+                                                        'equals': 'Must be equal to password 2'}),
             'password2': forms.CharField(widget=forms.PasswordInput(), label="Confirm your password",
                                          required=True, help_text="One more time please...", max_length=30,
-                                         min_length=8),
+                                         min_length=8, error_messages={'min_length': 'Should have at least 8',
+                                                        'max_length': 'Should have at most 30',
+                                                        'equals': 'Must be equal to password 2'}),
             'country': forms.Select(),
 
-            'test': forms.RegexField(regex=r'[a-zA-Z0-9]+'),
+            'test': forms.RegexField(regex=r'[a-zA-Z0-9]+', error_messages={"regex_pattern": 'Do not matches'}),
             })
         form = RegisterForm()
         rendered = jquery_validate.validate(form, "myformid")
