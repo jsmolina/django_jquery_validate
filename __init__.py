@@ -27,74 +27,64 @@ class JqueryForm(forms.Form):
 
 
             # emails
-            if self.fields[key].__class__.__name__ == 'EmailField':
+            if isinstance(self.fields[key], forms.fields.EmailField):
                 field_dict['email'] = True
-                self.fields[key].widget.attrs['msg']['email'] = "%s" % get_error_tags(
-                    self.fields[key].error_messages["invalid"])
+                self.fields[key].widget.attrs['msg']['email'] = "%s" % get_error_tags(self.fields[key].error_messages["invalid"])
 
-            elif self.fields[key].__class__.__name__ == 'DateField':
+            elif isinstance(self.fields[key], forms.fields.DateField):
                 field_dict['date'] = True
-                self.fields[key].widget.attrs['msg']['date'] = "%s" % get_error_tags(
-                    self.fields[key].error_messages["invalid"])
+                self.fields[key].widget.attrs['msg']['date'] = "%s" % get_error_tags(self.fields[key].error_messages["invalid"])
 
-            elif self.fields[key].__class__.__name__ == 'URLField':
+            elif isinstance(self.fields[key], forms.fields.URLField):
                 field_dict['url'] = True
-                self.fields[key].widget.attrs['msg']['url'] = "%s" % get_error_tags(
-                    self.fields[key].error_messages["invalid"])
-            elif self.fields[key].__class__.__name__ == 'RegexField':
-                field_dict['pattern'] = "##/^" + self.fields[key].regex.pattern + "$/i##"
-                self.fields[key].widget.attrs['msg']['pattern'] = "%s" % get_error_tags(
-                    self.fields[key].error_messages["invalid"])
+                self.fields[key].widget.attrs['msg']['url'] = "%s" % get_error_tags(self.fields[key].error_messages["invalid"])
+
+            elif isinstance(self.fields[key], forms.fields.RegexField):
+                field_dict['pattern'] = "##/" + self.fields[key].regex.pattern + "/i##"
+                self.fields[key].widget.attrs['msg']['pattern'] = "%s" % get_error_tags(self.fields[key].error_messages["regex_pattern"])
 
             # Required
-            if hasattr(self.fields[key], 'required'):
+            if getattr(self.fields[key], 'required', False) and self.fields[key].required:
                 field_dict['required'] = self.fields[key].required
-                self.fields[key].widget.attrs['msg']['required'] = get_error_tags('required')
+                self.fields[key].widget.attrs['msg']['required'] = "%s" % get_error_tags(self.fields[key].error_messages["required"])
             else:
                 field_dict['required'] = False
 
             # min length
-            if hasattr(self.fields[key], 'min_length'):
+            if getattr(self.fields[key], 'min_length', False):
                 if self.fields[key].min_length != None:
                     field_dict['minlength'] = self.fields[key].min_length
-                    if "min_length" in self.fields[key].error_messages:
-                        self.fields[key].widget.attrs['msg']['minlength'] = "%s" % get_error_tags(
-                            self.fields[key].error_messages["min_length"])
+                    self.fields[key].widget.attrs['msg']['minlength'] =  "%s" % get_error_tags(self.fields[key].error_messages["min_length"])
 
             # max length
-            if hasattr(self.fields[key], 'max_length'):
+            if getattr(self.fields[key], 'max_length', False):
                 if self.fields[key].max_length != None:
                     field_dict['maxlength'] = self.fields[key].max_length
-
-                    if "max_length" in self.fields[key].error_messages:
-                        self.fields[key].widget.attrs['msg']['maxlength'] = "%s" % get_error_tags(
-                            self.fields[key].error_messages["max_length"])
-
+                    self.fields[key].widget.attrs['msg']['maxlength'] = "%s" % get_error_tags(self.fields[key].error_messages["max_length"])
 
             # field same value than...
             if 'equals' in self.fields[key].widget.attrs:
                 field_dict['equalTo'] = "#%s" % self.fields[key].widget.attrs['equals']
                 equals_field = self.fields[key].widget.attrs['equals'].replace('id_', '')
-
-                if "equals" in self.fields[key].error_messages:
-                    self.fields[key].widget.attrs['msg']['equalTo'] = "%s" % get_error_tags(
-                        self.fields[key].error_messages["equals"])
+                # equals_name = self.fields[equals_field].label
+                self.fields[key].widget.attrs['msg']['equalTo'] = get_error_tags(self.fields[key].error_messages["equals"])
 
             if 'depends' in self.fields[key].widget.attrs:
                 field_dict['depends'] = "#%s" % self.fields[key].widget.attrs['depends']
 
+            # custom JS validation function: use 'custom' attribute value on wiget
+            # see http://stackoverflow.com/questions/241145/jquery-validate-plugin-how-to-create-a-simple-custom-rule
             if 'custom' in self.fields[key].widget.attrs:
                 custom = self.fields[key].widget.attrs['custom']
                 field_dict[self.fields[key].widget.attrs['custom']['method']] = custom['value']
-                if 'custom' in self.fields[key].error_messages:
-                    self.fields[key].widget.attrs['msg'][custom['method']] = "%s" % get_error_tags(
-                                self.fields[key].error_messages["custom"])
 
+            if 'custom' in self.fields[key].error_messages:
+                self.fields[key].widget.attrs['msg'][custom['method']] = "%s" % get_error_tags(
+                    self.fields[key].error_messages["custom"])
 
             if 'remote' in self.fields[key].widget.attrs:
                 field_dict['remote'] = self.fields[key].widget.attrs['remote']['url']
-                self.fields[key].widget.attrs['msg']['remote'] = get_error_tags(
-                    self.fields[key].widget.attrs['remote']['message'])
+                self.fields[key].widget.attrs['msg']['remote'] = get_error_tags(self.fields[key].widget.attrs['remote']['message'])
 
             self.fields[key].widget.attrs.update({'cls': field_dict})
 
