@@ -34,3 +34,8 @@ Which can be forced from view:
 Test
 =====
 Just execute nosetests in django_jquery_validate
+
+Additional info
+===============
+If you use multilingual and you see a functional__proxy inside your html code, there is a trick to force the string representation:
+ugettext_lazy("Hello").encode('utf-8')
