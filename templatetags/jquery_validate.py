@@ -42,13 +42,13 @@ def map_messages(field, validate_dict):
     """
     # check field type restrictions
     if getattr(validate_dict['rules'][field.name], 'email', False):
-        validate_dict['messages'][field.name]['email'] = unicode(field.field.error_messages['invalid'])
+        validate_dict['messages'][field.name]['email'] = field.field.error_messages['invalid']
     elif getattr(validate_dict['rules'][field.name], 'url', False):
-        validate_dict['messages'][field.name]['url'] = unicode(field.field.error_messages['invalid'])
+        validate_dict['messages'][field.name]['url'] = field.field.error_messages['invalid']
     elif getattr(validate_dict['rules'][field.name], 'date', False):
-        validate_dict['messages'][field.name]['date'] = unicode(field.field.error_messages['invalid'])
+        validate_dict['messages'][field.name]['date'] = field.field.error_messages['invalid']
     elif getattr(validate_dict['rules'][field.name], 'pattern', False):
-        validate_dict['messages'][field.name]['pattern'] = unicode(field.field.error_messages['regex_pattern'])
+        validate_dict['messages'][field.name]['pattern'] = field.field.error_messages['regex_pattern']
 
     # check rules
     if getattr(validate_dict['rules'][field.name], 'min_length', False):
