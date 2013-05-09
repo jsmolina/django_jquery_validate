@@ -28,7 +28,6 @@ class JqueryGenTest(TestCase):
                                      'custom': "Custom message"}),
             'url': forms.URLField(min_length=2),
             })
-            
         form = CommentForm()
 
         for key in form.fields.keys():
@@ -118,9 +117,9 @@ class JqueryGenTest(TestCase):
         form = RegisterForm()
         rendered = jquery_validate.validate(form, "myformid")
 
-        self.assertRegexpMatches(rendered, '"email": {"email": true, "remote": "/user/mail-exists/", "required": true}')
+        self.assertRegexpMatches(rendered, "'email': {'required': true, 'remote': '/user/mail-exists/', 'email': true}")
         self.assertRegexpMatches(rendered, "\$\('#myformid'\).validate\({")
         self.assertRegexpMatches(rendered,
-                                 '"password": {"equalTo": "#id_password2", "maxlength": 30, "minlength": 8, "required": true}')
-        self.assertRegexpMatches(rendered, '"password2": {"maxlength": 30, "minlength": 8, "required": true}')
-        self.assertRegexpMatches(rendered, '"test": {"pattern"')
+                                 "'password': {'minlength': 8, 'required': true, 'equalTo': '#id_password2', 'maxlength': 30}")
+        self.assertRegexpMatches(rendered, "'password2': {'minlength': 'Should have at least 8', 'maxlength': 'Should have at most 30'}")
+        
