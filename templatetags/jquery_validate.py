@@ -5,13 +5,14 @@ from django.utils.translation import ugettext as _
 register = template.Library()
 
 default_msgs = {
-        'regex_pattern': 'Pattern does not  match. %s',
-        'min_length': 'Field has a min length of %s',
-        'max_length': 'Field has a max length of %s',
-        'equals': 'Field must equal %s',
-        'custom': 'Not valid: %s',
-        'invalid': 'Not valid: %s',
-        'required': 'Field is required%s'}
+    'regex_pattern': 'Pattern does not  match. %s',
+    'min_length': 'Field has a min length of %s',
+    'max_length': 'Field has a max length of %s',
+    'equals': 'Field must equal %s',
+    'custom': 'Not valid: %s',
+    'invalid': 'Not valid: %s',
+    'required': 'Field is required%s'}
+
 
 @register.simple_tag
 def validate_server(form, field):
@@ -24,14 +25,14 @@ def validate_server(form, field):
     return error_str
 
 
-def custom_or_default(field, django, jquery):
+def custom_or_default(field, validate_dict, django, jquery, params=('',)):
     """Maps field error messages
     :param field: Field reference
     :param django: django naming
     :param jquery: jquery naming
     :return:
     """
-    field[jquery] = getattr(field.field.error_messages, django, default_msgs[django])
+    validate_dict[jquery] = unicode(field.field.error_messages.get(django, default_msgs[django] % params))
 
 
 def map_messages(field, validate_dict):
@@ -41,28 +42,29 @@ def map_messages(field, validate_dict):
     :return:
     """
     # check field type restrictions
-    if getattr(validate_dict['rules'][field.name], 'email', False):
-        validate_dict['messages'][field.name]['email'] = unicode(field.field.error_messages['invalid'])
-    elif getattr(validate_dict['rules'][field.name], 'url', False):
-        validate_dict['messages'][field.name]['url'] = unicode(field.field.error_messages['invalid'])
-    elif getattr(validate_dict['rules'][field.name], 'date', False):
-        validate_dict['messages'][field.name]['date'] = unicode(field.field.error_messages['invalid'])
-    elif getattr(validate_dict['rules'][field.name], 'pattern', False):
-        validate_dict['messages'][field.name]['pattern'] = unicode(field.field.error_messages['regex_pattern'])
+    validate_dict['messages'][field.name] = {}
+    if 'email' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'invalid', 'email', 'Invalid mail')
+    elif 'url' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'invalid', 'url', 'Invalid url')
+    elif 'date' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'invalid', 'date', 'Invalid date')
+    elif 'pattern' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'regex_pattern', 'pattern', '')
 
     # check rules
-    if getattr(validate_dict['rules'][field.name], 'min_length', False):
-        custom_or_default(validate_dict['messages'][field.name], 'min_length', 'minlength')
-    if getattr(validate_dict['rules'][field.name], 'max_length', False):
-        custom_or_default(validate_dict['messages'][field.name], 'max_length', 'maxlength')
-    if getattr(validate_dict['rules'][field.name], 'equalTo', False):
-        custom_or_default(validate_dict['messages'][field.name], 'equals', 'equalTo')
-    if getattr(validate_dict['rules'][field.name], 'equalTo', False):
-        custom_or_default(validate_dict['messages'][field.name], 'equals', 'equalTo')
-    if getattr(validate_dict['rules'][field.name], 'custom', False):
-        custom_or_default(validate_dict['messages'][field.name], 'custom', 'custom')
-    if getattr(validate_dict['rules'][field.name], 'remote', False):
-        custom_or_default(validate_dict['messages'][field.name], 'remote', 'remote')
+    if 'minlength' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'min_length', 'minlength',
+                          validate_dict['rules'][field.name]['minlength'])
+    if 'maxlength' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'max_length', 'maxlength',
+                          validate_dict['rules'][field.name]['maxlength'])
+    if 'equals' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'equals', 'equalTo')
+    if 'custom' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'custom', 'custom')
+    if 'remote' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'invalid', 'remote')
 
 
 @register.simple_tag
@@ -74,7 +76,7 @@ def validate(form, form_id):
     :return:
     """
     validate_str = ""
-    validate_dict = {'onkeyup': False,  'rules': {}, 'messages': {}, "success": "", 'ignore': '.ignore'}
+    validate_dict = {'onkeyup': False, 'rules': {}, 'messages': {}, "success": "", 'ignore': '.ignore'}
 
     for field in form:
         validate_dict['rules'][field.name] = field.field.widget.attrs["cls"]
@@ -87,14 +89,6 @@ def validate(form, form_id):
 
         map_messages(field, validate_dict)
 
-
-        validate_dict['messages'][field.name] = {}
-        try:
-            for key in field.field.error_messages:
-                validate_dict['messages'][field.name][key] = unicode(field.field.error_messages[key])
-        except:
-            pass
-
         del field.field.widget.attrs['msg']
 
     validate_str += "<script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>"
@@ -105,16 +99,20 @@ def validate(form, form_id):
                                "    label.removeClass('error'); label.parent().removeClass('status-error'); label.remove();" + \
                                "}##"
 
-    validate_dict['showErrors'] = "## function(errorMap, errorList) {" +\
-        "this.defaultShowErrors();" + \
+    validate_dict['showErrors'] = "## function(errorMap, errorList) {" + \
+                                  "this.defaultShowErrors();" + \
                                   "$('label.error').parent().addClass('status-error')" + \
                                   "}##"
-    validate_str += "   $('#%s').validate(%s);" % (form_id, dumps(validate_dict, sort_keys=True))
+
+    validate_str += "   $('#%s').validate(%s);" % (form_id, validate_dict)
 
     validate_str += "});"
     validate_str += '</script>'
     validate_str = validate_str.replace("\"##", "")
     validate_str = validate_str.replace("##\"", "")
     validate_str = validate_str.replace("\\\\", "\\")
+    validate_str = validate_str.replace("u'", "'")
+    validate_str = validate_str.replace("True", "true")
+    validate_str = validate_str.replace("False", "false")
 
     return validate_str
