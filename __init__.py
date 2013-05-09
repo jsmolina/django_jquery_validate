@@ -83,3 +83,12 @@ class JqueryForm(forms.Form):
                 field_dict['remote'] = self.fields[key].widget.attrs['remote']['url']
 
             self.fields[key].widget.attrs.update({'cls': field_dict})
+
+
+class Trans(object):
+    def __init__(self, text, params):
+        self.text = text
+        self.params = params
+
+    def __str__(self):
+        return self.text % self.params
