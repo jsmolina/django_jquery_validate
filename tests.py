@@ -121,5 +121,5 @@ class JqueryGenTest(TestCase):
         self.assertRegexpMatches(rendered, "\$\('#myformid'\).validate\({")
         self.assertRegexpMatches(rendered,
                                  "'password': {'minlength': 8, 'required': true, 'equalTo': '#id_password2', 'maxlength': 30}")
-        self.assertRegexpMatches(rendered, "'password2': {'minlength': 'Should have at least 8', 'maxlength': 'Should have at most 30'}")
-        
+        self.assertRegexpMatches(rendered, "'password2': {'minlength': 8, 'required': true, 'maxlength': 30}")
+

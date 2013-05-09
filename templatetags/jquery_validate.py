@@ -59,8 +59,10 @@ def map_messages(field, validate_dict):
     if 'maxlength' in validate_dict['rules'][field.name]:
         custom_or_default(field, validate_dict['messages'][field.name], 'max_length', 'maxlength',
                           validate_dict['rules'][field.name]['maxlength'])
-    if 'equals' in validate_dict['rules'][field.name]:
+    if 'equalTo' in validate_dict['rules'][field.name]:
         custom_or_default(field, validate_dict['messages'][field.name], 'equals', 'equalTo')
+    if 'required' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'required', 'required')
     if 'custom' in validate_dict['rules'][field.name]:
         custom_or_default(field, validate_dict['messages'][field.name], 'custom', 'custom')
     if 'remote' in validate_dict['rules'][field.name]:
