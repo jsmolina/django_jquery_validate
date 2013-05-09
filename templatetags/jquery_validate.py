@@ -87,14 +87,6 @@ def validate(form, form_id):
 
         map_messages(field, validate_dict)
 
-
-        validate_dict['messages'][field.name] = {}
-        try:
-            for key in field.field.error_messages:
-                validate_dict['messages'][field.name][key] = unicode(field.field.error_messages[key])
-        except:
-            pass
-
         del field.field.widget.attrs['msg']
 
     validate_str += "<script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>"
