@@ -63,8 +63,9 @@ def map_messages(field, validate_dict):
         custom_or_default(field, validate_dict['messages'][field.name], 'equals', 'equalTo')
     if 'required' in validate_dict['rules'][field.name]:
         custom_or_default(field, validate_dict['messages'][field.name], 'required', 'required')
-    if 'custom' in validate_dict['rules'][field.name]:
-        custom_or_default(field, validate_dict['messages'][field.name], 'custom', 'custom')
+    if 'custom' in field.field.widget.attrs:
+        custom_method = field.field.widget.attrs['custom']['method']
+        custom_or_default(field, validate_dict['messages'][field.name], 'custom', custom_method)
     if 'remote' in validate_dict['rules'][field.name]:
         custom_or_default(field, validate_dict['messages'][field.name], 'invalid', 'remote')
 
@@ -82,16 +83,15 @@ def validate(form, form_id):
 
     for field in form:
         validate_dict['rules'][field.name] = field.field.widget.attrs["cls"]
+        map_messages(field, validate_dict)
+
+        del field.field.widget.attrs['msg']
         del field.field.widget.attrs["cls"]
         if 'remote' in field.field.widget.attrs:
             del field.field.widget.attrs["remote"]
 
         if 'custom' in field.field.widget.attrs:
             del field.field.widget.attrs["custom"]
-
-        map_messages(field, validate_dict)
-
-        del field.field.widget.attrs['msg']
 
     validate_str += "<script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>"
     validate_str += "<script type='text/javascript' src='/static/js/additional-methods.min.js'></script>"
@@ -112,6 +112,8 @@ def validate(form, form_id):
     validate_str += '</script>'
     validate_str = validate_str.replace("\"##", "")
     validate_str = validate_str.replace("##\"", "")
+    validate_str = validate_str.replace("'##", "")
+    validate_str = validate_str.replace("##'", "")
     validate_str = validate_str.replace("\\\\", "\\")
     validate_str = validate_str.replace("u'", "'")
     validate_str = validate_str.replace("True", "true")

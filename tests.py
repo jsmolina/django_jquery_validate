@@ -98,6 +98,10 @@ class JqueryGenTest(TestCase):
             'email': forms.EmailField(label="Your email", required=True,
                                       widget=forms.TextInput(attrs={
                                           'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"}})),
+            'email2': forms.EmailField(label="Your email", required=True,
+                                      widget=forms.TextInput(attrs={
+                                          'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"},
+                                          'custom': {'method': 'require_from_group', 'value': '[1,".mailgroup"]'}})),
             'password': forms.CharField(widget=forms.PasswordInput(attrs={'equals': 'id_password2'}),
                                         label="Choose a password",
                                         required=True,
