@@ -30,6 +30,7 @@ class JqueryGenTest(TestCase):
                                      'custom': "Custom message"}),
             'url': forms.URLField(),
             })
+            
         form = CommentForm()
 
         for key in form.fields.keys():
