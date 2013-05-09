@@ -1,8 +1,17 @@
 from django import template
 from simplejson import dumps, loads
+from django.utils.translation import ugettext as _
 
 register = template.Library()
 
+default_msgs = {
+        'regex_pattern': 'Pattern does not  match. %s',
+        'min_length': 'Field has a min length of %s',
+        'max_length': 'Field has a max length of %s',
+        'equals': 'Field must equal %s',
+        'custom': 'Not valid: %s',
+        'invalid': 'Not valid: %s',
+        'required': 'Field is required%s'}
 
 @register.simple_tag
 def validate_server(form, field):
@@ -13,6 +22,47 @@ def validate_server(form, field):
             <div class="error-wrapper "><p class="error"> %s </p></div>
             </label>""" % (field, form.errors[field][0])
     return error_str
+
+
+def custom_or_default(field, django, jquery):
+    """Maps field error messages
+    :param field: Field reference
+    :param django: django naming
+    :param jquery: jquery naming
+    :return:
+    """
+    field[jquery] = getattr(field.field.error_messages, django, default_msgs[django])
+
+
+def map_messages(field, validate_dict):
+    """ Maps django messages to jquery messages
+    :param field:
+    :param validate_dict:
+    :return:
+    """
+    # check field type restrictions
+    if getattr(validate_dict['rules'][field.name], 'email', False):
+        validate_dict['messages'][field.name]['email'] = unicode(field.field.error_messages['invalid'])
+    elif getattr(validate_dict['rules'][field.name], 'url', False):
+        validate_dict['messages'][field.name]['url'] = unicode(field.field.error_messages['invalid'])
+    elif getattr(validate_dict['rules'][field.name], 'date', False):
+        validate_dict['messages'][field.name]['date'] = unicode(field.field.error_messages['invalid'])
+    elif getattr(validate_dict['rules'][field.name], 'pattern', False):
+        validate_dict['messages'][field.name]['pattern'] = unicode(field.field.error_messages['regex_pattern'])
+
+    # check rules
+    if getattr(validate_dict['rules'][field.name], 'min_length', False):
+        custom_or_default(validate_dict['messages'][field.name], 'min_length', 'minlength')
+    if getattr(validate_dict['rules'][field.name], 'max_length', False):
+        custom_or_default(validate_dict['messages'][field.name], 'max_length', 'maxlength')
+    if getattr(validate_dict['rules'][field.name], 'equalTo', False):
+        custom_or_default(validate_dict['messages'][field.name], 'equals', 'equalTo')
+    if getattr(validate_dict['rules'][field.name], 'equalTo', False):
+        custom_or_default(validate_dict['messages'][field.name], 'equals', 'equalTo')
+    if getattr(validate_dict['rules'][field.name], 'custom', False):
+        custom_or_default(validate_dict['messages'][field.name], 'custom', 'custom')
+    if getattr(validate_dict['rules'][field.name], 'remote', False):
+        custom_or_default(validate_dict['messages'][field.name], 'remote', 'remote')
 
 
 @register.simple_tag
@@ -35,11 +85,15 @@ def validate(form, form_id):
         if 'custom' in field.field.widget.attrs:
             del field.field.widget.attrs["custom"]
 
-    for field in form:
-        validate_dict['messages'][field.name] = {}
+        map_messages(field, validate_dict)
 
-        for key in field.field.widget.attrs['msg']:
-            validate_dict['messages'][field.name][key] = field.field.widget.attrs['msg'][key]
+
+        validate_dict['messages'][field.name] = {}
+        try:
+            for key in field.field.error_messages:
+                validate_dict['messages'][field.name][key] = unicode(field.field.error_messages[key])
+        except:
+            pass
 
         del field.field.widget.attrs['msg']
 
