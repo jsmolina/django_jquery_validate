@@ -12,15 +12,15 @@ You just create a new form, using normal django forms, but extending JqueryForm 
 ```python
  class RegisterForm(JqueryForm):
     email = forms.EmailField(
-     min_length=8, max_length=20, 
-     label="Type your email so we can confirm you're there",
-     required=True,
-     widget=forms.TextInput(
-      attrs={'remote': {'url': "/user/mail-exists", 'message': "Email already taken"}}),
-    error_messages = {"min_length": Trans(
-        _('Use %(min)s and %(max)s characters with at least one number'),
-        {'min': 8, 'max': 20}
-    )}),
+        min_length=8, max_length=20,
+        label="Type your email so we can confirm you're there",
+        required=True,
+        widget=forms.TextInput(
+            attrs={'remote': {'url': "/user/mail-exists", 'message': "Email already taken"}}),
+        error_messages={"min_length": Trans(
+            _('Use %(min)s and %(max)s characters with at least one number'),
+            {'min': 8, 'max': 20}
+        )}),
     name = forms.RegexField(regex=r'[a-zA-Z0-9]+', error_messages={
         "invalid": "Use only alphanumeric characters", })
 ```
