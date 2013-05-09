@@ -98,6 +98,10 @@ class JqueryGenTest(TestCase):
             'email': forms.EmailField(label="Your email", required=True,
                                       widget=forms.TextInput(attrs={
                                           'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"}})),
+            'email2': forms.EmailField(label="Your email", required=True,
+                                      widget=forms.TextInput(attrs={
+                                          'remote': {'url': "/user/mail-exists/", 'message': "Email already taken"},
+                                          'custom': {'method': 'require_from_group', 'value': '[1,".mailgroup"]'}})),
             'password': forms.CharField(widget=forms.PasswordInput(attrs={'equals': 'id_password2'}),
                                         label="Choose a password",
                                         required=True,
@@ -121,5 +125,5 @@ class JqueryGenTest(TestCase):
         self.assertRegexpMatches(rendered, "\$\('#myformid'\).validate\({")
         self.assertRegexpMatches(rendered,
                                  "'password': {'minlength': 8, 'required': true, 'equalTo': '#id_password2', 'maxlength': 30}")
-        self.assertRegexpMatches(rendered, "'password2': {'minlength': 'Should have at least 8', 'maxlength': 'Should have at most 30'}")
-        
+        self.assertRegexpMatches(rendered, "'password2': {'minlength': 8, 'required': true, 'maxlength': 30}")
+
