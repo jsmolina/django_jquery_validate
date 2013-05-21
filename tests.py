@@ -75,7 +75,6 @@ class JqueryGenTest(TestCase):
 
             if key is "email":
                 self.assertTrue(cls['email'])
-                self.assertEquals(cls['remote'], "/user/mail-exists/")
                 self.assertTrue(cls['required'])
                 self.assertEquals(cls['require_from_group'], '[1,".mailgroup"]')
             elif key is "password":
@@ -120,8 +119,7 @@ class JqueryGenTest(TestCase):
             })
         form = RegisterForm()
         rendered = jquery_validate.validate(form, "myformid")
-
-        self.assertRegexpMatches(rendered, "'email': {'required': true, 'remote': '/user/mail-exists/', 'email': true}")
+        self.assertRegexpMatches(rendered, "'email': {'required': true, 'remote': {'url': '/user/mail-exists/'}, 'email': true}")
         self.assertRegexpMatches(rendered, "\$\('#myformid'\).validate\({")
         self.assertRegexpMatches(rendered,
                                  "'password': {'minlength': 8, 'required': true, 'equalTo': '#id_password2', 'maxlength': 30}")
