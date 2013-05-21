@@ -25,6 +25,7 @@ You just create a new form, using normal django forms, but extending JqueryForm 
         "invalid": "Use only alphanumeric characters", })
 ```
 NOTE: If you have something parametrized, use provided Trans class.
+NOTE2: Remote now supports sending 'data' param, allowing sending additional data (e.g. another field) to server.
 
 Then in template, you just specify the place where you want to have the jquery code for templatetag:
 ```python
