@@ -80,7 +80,13 @@ class JqueryForm(forms.Form):
                 field_dict[self.fields[key].widget.attrs['custom']['method']] = custom['value']
 
             if 'remote' in self.fields[key].widget.attrs:
-                field_dict['remote'] = self.fields[key].widget.attrs['remote']['url']
+                field_dict['remote'] = {
+                    'url': self.fields[key].widget.attrs['remote']['url']
+                }
+                
+                if 'data' in self.fields[key].widget.attrs['remote']:
+                    field_dict['remote']['data'] = self.fields[key].widget.attrs['remote']['data']
+
 
             self.fields[key].widget.attrs.update({'cls': field_dict})
 
