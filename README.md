@@ -38,8 +38,17 @@ field.widget.attrs['custom'] = {
 ```
 
 * NOTE: If you have something parametrized, use provided Trans class.
-* NOTE2: Remote now supports sending 'data' param, allowing sending additional data (e.g. another field) to server.
-
+* NOTE2: Remote supports sending 'data' param, allowing sending additional data (e.g. another field) to server.
+```python
+widget=forms.TextInput(
+            attrs={
+                'remote': {
+                    'url': "/user/name-exists/",
+                    'data': {'id': '##$("#id_id").val()##'}
+                }
+            }
+        ),
+```
 Then in template, you just specify the place where you want to have the jquery code for templatetag:
 ```python
 {% load jquery_validate %}{% validate form "signup-form" %}
