@@ -1,7 +1,7 @@
 from django import template
+from django import forms
 from simplejson import dumps, loads
 from django.utils.translation import ugettext as _
-
 register = template.Library()
 
 default_msgs = {
@@ -42,6 +42,10 @@ def map_messages(field, validate_dict):
     :return:
     """
     # check field type restrictions
+    # take default message if not set
+    if field.name not in validate_dict['rules']:
+        return
+
     validate_dict['messages'][field.name] = {}
     if 'email' in validate_dict['rules'][field.name]:
         custom_or_default(field, validate_dict['messages'][field.name], 'invalid', 'email', 'Invalid mail')
@@ -82,19 +86,29 @@ def validate(form, form_id):
     validate_dict = {'onkeyup': False, 'rules': {}, 'messages': {}, "success": "", 'ignore': '.ignore'}
 
     for field in form:
-        validate_dict['rules'][field.name] = field.field.widget.attrs["cls"]
+        if isinstance(field.field, forms.fields.MultiValueField):
+            for key2 in xrange(0, len(field.field.fields)):
+                field2 = field.field.fields[key2]
+                field2_name = "{0}_{1}".format(field.name, key2)
+                validate_dict['rules'][field2_name] = field2.widget.attrs["cls"]
+        else:
+            validate_dict['rules'][field.name] = field.field.widget.attrs["cls"]
         map_messages(field, validate_dict)
 
-        del field.field.widget.attrs['msg']
-        del field.field.widget.attrs["cls"]
+        if 'msg' in field.field.widget.attrs:
+            del field.field.widget.attrs['msg']
+
+        if 'cls' in field.field.widget.attrs:
+            del field.field.widget.attrs["cls"]
+
         if 'remote' in field.field.widget.attrs:
             del field.field.widget.attrs["remote"]
 
         if 'custom' in field.field.widget.attrs:
             del field.field.widget.attrs["custom"]
-
-    validate_str += "<script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>"
-    validate_str += "<script type='text/javascript' src='/static/js/additional-methods.min.js'></script>"
+    base_url = context_processors.baseurl()
+    validate_str += "<script type='text/javascript' src='" + base_url['STATIC_URL'] + "js/ext/jquery.validate.min.js'></script>"
+    validate_str += "<script type='text/javascript' src='" + base_url['STATIC_URL'] + "js/ext/additional-methods.min.js'></script>"
     validate_str += "<script type='text/javascript'>"
     validate_str += "$(document).ready(function() {"
     validate_dict['success'] = "##function(label) { " + \
@@ -103,7 +117,14 @@ def validate(form, form_id):
 
     validate_dict['showErrors'] = "## function(errorMap, errorList) {" + \
                                   "this.defaultShowErrors();" + \
-                                  "$('label.error').parent().addClass('status-error')" + \
+                                  "$('label.error').parent().addClass('status-error');" + \
+                                  "$('label.error').each(function() {"+ \
+                                  "text = '<div class=\\'error-wrapper\\'><p class=\\'error\\'>' + $(this).text() + '</p></div>';"+ \
+                                  "$(this).html(text);" + \
+                                  "});" + \
+                                  "}##"
+    validate_dict['onfocusout'] = "## function(e) {" + \
+                                  "this.element(e);" + \
                                   "}##"
 
     validate_str += "   $('#%s').validate(%s);" % (form_id, validate_dict)
@@ -116,6 +137,7 @@ def validate(form, form_id):
     validate_str = validate_str.replace("##'", "")
     validate_str = validate_str.replace("\\\\", "\\")
     validate_str = validate_str.replace("u'", "'")
+    validate_str = validate_str.replace("ufunction", "function")
     validate_str = validate_str.replace("True", "true")
     validate_str = validate_str.replace("False", "false")
 
