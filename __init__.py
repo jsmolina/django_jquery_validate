@@ -1,4 +1,5 @@
 from django import forms
+import copy
 
 
 class JqueryForm(forms.Form):
@@ -47,48 +48,60 @@ class JqueryForm(forms.Form):
                                         self.fields[key].regex.pattern + \
                                         "/i##"
 
-            # Required
-            if getattr(self.fields[key], 'required', False) and self.fields[key].required:
-                field_dict['required'] = self.fields[key].required
-
+            if isinstance(self.fields[key], forms.fields.MultiValueField):
+                for key2 in xrange(0, len(self.fields[key].fields)):
+                    field_dict_copy = copy.deepcopy(field_dict)
+                    rules_dict = self.check_attrs_rules(self.fields[key].fields[key2])
+                    field_dict_copy.update(rules_dict)
+                    self.fields[key].fields[key2].widget.attrs.update({'cls': field_dict_copy})
             else:
-                field_dict['required'] = False
+                rules_dict = self.check_attrs_rules(self.fields[key])
+                field_dict.update(rules_dict)
+                self.fields[key].widget.attrs.update({'cls': field_dict})
 
-            # min length
-            if getattr(self.fields[key], 'min_length', False):
-                if self.fields[key].min_length is not None:
-                    field_dict['minlength'] = self.fields[key].min_length
+    def check_attrs_rules(self, field):
+        """MultivalueWidgets Recursive nested fields support"""
+        rules_dict = {}
+        # Required
+        if getattr(field, 'required', False) and field.required:
+            rules_dict['required'] = field.required
 
-            # max length
-            if getattr(self.fields[key], 'max_length', False):
-                if self.fields[key].max_length is not None:
-                    field_dict['maxlength'] = self.fields[key].max_length
+        else:
+            rules_dict['required'] = False
 
-            # field same value than...
-            if 'equals' in self.fields[key].widget.attrs:
-                field_dict['equalTo'] = "#%s" % self.fields[key].widget.attrs['equals']
-                equals_field = self.fields[key].widget.attrs['equals'].replace('id_', '')
-                # equals_name = self.fields[equals_field].label
+        # min length
+        if getattr(field, 'min_length', False):
+            if field.min_length is not None:
+                rules_dict['minlength'] = field.min_length
 
-            if 'depends' in self.fields[key].widget.attrs:
-                field_dict['depends'] = "#%s" % self.fields[key].widget.attrs['depends']
+        # max length
+        if getattr(field, 'max_length', False):
+            if field.max_length is not None:
+                rules_dict['maxlength'] = field.max_length
 
-            # custom JS validation function: use 'custom' attribute value on wiget
-            # see http://stackoverflow.com/questions/241145/jquery-validate-plugin-how-to-create-a-simple-custom-rule
-            if 'custom' in self.fields[key].widget.attrs:
-                custom = self.fields[key].widget.attrs['custom']
-                field_dict[self.fields[key].widget.attrs['custom']['method']] = custom['value']
+        # field same value than...
+        if 'equals' in field.widget.attrs:
+            rules_dict['equalTo'] = "#%s" % field.widget.attrs['equals']
+            equals_field = field.widget.attrs['equals'].replace('id_', '')
 
-            if 'remote' in self.fields[key].widget.attrs:
-                field_dict['remote'] = {
-                    'url': self.fields[key].widget.attrs['remote']['url']
-                }
-                
-                if 'data' in self.fields[key].widget.attrs['remote']:
-                    field_dict['remote']['data'] = self.fields[key].widget.attrs['remote']['data']
+        if 'depends' in field.widget.attrs:
+            rules_dict['depends'] = "#%s" % field.widget.attrs['depends']
 
+        # custom JS validation function: use 'custom' attribute value on wiget
+        # see http://stackoverflow.com/questions/241145/jquery-validate-plugin-how-to-create-a-simple-custom-rule
+        if 'custom' in field.widget.attrs:
+            custom = field.widget.attrs['custom']
+            rules_dict[field.widget.attrs['custom']['method']] = custom['value']
 
-            self.fields[key].widget.attrs.update({'cls': field_dict})
+        if 'remote' in field.widget.attrs:
+            rules_dict['remote'] = {
+                'url': field.widget.attrs['remote']['url']
+            }
+
+            if 'data' in field.widget.attrs['remote']:
+                rules_dict['remote']['data'] = field.widget.attrs['remote']['data']
+
+        return rules_dict
 
 
 class Trans(object):
