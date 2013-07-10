@@ -24,6 +24,19 @@ You just create a new form, using normal django forms, but extending JqueryForm 
     name = forms.RegexField(regex=r'[a-zA-Z0-9]+', error_messages={
         "invalid": "Use only alphanumeric characters", })
 ```
+
+You could also create a field which is required only if a checkbox is enabled in two ways: Adding 'ignore' 
+class on checkbox, or creating a custom JS code:
+```python
+field.widget.attrs['custom'] = {
+    'method': 'required',
+    'value': "##function (element) {" +
+ 	"if($(\"#id_" + 'myCheckbox_' + id + "\").is(\":checked\")) {" +
+		" return true;} else { return false;}"
+		"}##"}
+
+```
+
 * NOTE: If you have something parametrized, use provided Trans class.
 * NOTE2: Remote now supports sending 'data' param, allowing sending additional data (e.g. another field) to server.
 
