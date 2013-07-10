@@ -39,6 +39,7 @@ field.widget.attrs['custom'] = {
 
 * NOTE: If you have something parametrized, use provided Trans class.
 * NOTE2: Remote supports sending 'data' param, allowing sending additional data (e.g. another field) to server.
+
 ```python
 widget=forms.TextInput(
             attrs={
