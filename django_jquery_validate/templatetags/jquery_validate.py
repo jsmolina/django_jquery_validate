@@ -106,9 +106,8 @@ def validate(form, form_id):
 
         if 'custom' in field.field.widget.attrs:
             del field.field.widget.attrs["custom"]
-    base_url = context_processors.baseurl()
-    validate_str += "<script type='text/javascript' src='" + base_url['STATIC_URL'] + "js/ext/jquery.validate.min.js'></script>"
-    validate_str += "<script type='text/javascript' src='" + base_url['STATIC_URL'] + "js/ext/additional-methods.min.js'></script>"
+    validate_str += "<script type='text/javascript' src='" + "js/ext/jquery.validate.min.js'></script>"
+    validate_str += "<script type='text/javascript' src='" + "js/ext/additional-methods.min.js'></script>"
     validate_str += "<script type='text/javascript'>"
     validate_str += "$(document).ready(function() {"
     validate_dict['success'] = "##function(label) { " + \
