@@ -19,9 +19,8 @@ def validate_server(form, field):
     error_str = ""
 
     if field in form.errors:
-        error_str = """<label for="id_%s" class="error" style="display: inline;">
-            <div class="error-wrapper "><p class="error"> %s </p></div>
-            </label>""" % (field, form.errors[field][0])
+        error_str = '<label for="id_{0}" class="error" style="display: inline;">{1}</label>'.format(
+            field, form.errors[field][0])
     return error_str
 
 
@@ -117,10 +116,6 @@ def validate(form, form_id):
     validate_dict['showErrors'] = "## function(errorMap, errorList) {" + \
                                   "this.defaultShowErrors();" + \
                                   "$('label.error').parent().addClass('status-error');" + \
-                                  "$('label.error').each(function() {"+ \
-                                  "text = '<div class=\\'error-wrapper\\'><p class=\\'error\\'>' + $(this).text() + '</p></div>';"+ \
-                                  "$(this).html(text);" + \
-                                  "});" + \
                                   "}##"
     validate_dict['onfocusout'] = "## function(e) {" + \
                                   "this.element(e);" + \
