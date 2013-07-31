@@ -47,6 +47,8 @@ class JqueryForm(forms.Form):
                 field_dict['pattern'] = "##/" + \
                                         self.fields[key].regex.pattern + \
                                         "/i##"
+            elif isinstance(self.fields[key], forms.fields.FloatField):
+                field_dict['number'] = True
 
             if isinstance(self.fields[key], forms.fields.MultiValueField):
                 for key2 in xrange(0, len(self.fields[key].fields)):
