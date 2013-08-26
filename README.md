@@ -5,12 +5,16 @@ A simple django app featuring automatic jquery validation code.
 
 Based on sample from snarfu.com
 
+What's new
+==========
+Converted JqueryForm to class decorator, to simplify usage.
+
 Usage
 =====
 First, enable on settings.py the app.
-You just create a new form, using normal django forms, but extending JqueryForm instead of Form:
+NEW! You just create a new form, using normal django forms, no need of inheritance.
 ```python
- class RegisterForm(JqueryForm):
+ class RegisterForm(forms.Form):
     email = forms.EmailField(
         min_length=8, max_length=20,
         label="Type your email so we can confirm you're there",
@@ -37,7 +41,7 @@ field.widget.attrs['custom'] = {
 
 ```
 
-* NOTE: If you have something parametrized, use provided Trans class.
+* NOTE: If you have something parametrized, you could use provided Trans class.
 * NOTE2: Remote supports sending 'data' param, allowing sending additional data (e.g. another field) to server.
 
 ```python
