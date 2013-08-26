@@ -1,8 +1,88 @@
 from django import template
 from django import forms
-from simplejson import dumps, loads
-from django.utils.translation import ugettext as _
+import copy
+
 register = template.Library()
+
+
+class JqueryFormHelper(object):
+    def preprocess_fields(self, form):
+        for key in form.fields.keys():
+            field_dict = {}
+            form.fields[key].widget.attrs['msg'] = {}
+
+            # emails
+            if isinstance(form.fields[key], forms.fields.EmailField):
+                field_dict['email'] = True
+
+            elif isinstance(form.fields[key], forms.fields.DateField):
+                field_dict['date'] = True
+
+            elif isinstance(form.fields[key], forms.fields.URLField):
+                field_dict['url'] = True
+
+            elif isinstance(form.fields[key], forms.fields.RegexField):
+                field_dict['pattern'] = "##/" + \
+                                        form.fields[key].regex.pattern + \
+                                        "/i##"
+            elif isinstance(form.fields[key], forms.fields.FloatField):
+                field_dict['number'] = True
+
+            if isinstance(form.fields[key], forms.fields.MultiValueField):
+                for key2 in xrange(0, len(form.fields[key].fields)):
+                    field_dict_copy = copy.deepcopy(field_dict)
+                    rules_dict = self.check_attrs_rules(form.fields[key].fields[key2])
+                    field_dict_copy.update(rules_dict)
+                    form.fields[key].fields[key2].widget.attrs.update({'cls': field_dict_copy})
+            else:
+                rules_dict = self.check_attrs_rules(form.fields[key])
+                field_dict.update(rules_dict)
+                form.fields[key].widget.attrs.update({'cls': field_dict})
+
+    def check_attrs_rules(self, field):
+        """MultivalueWidgets Recursive nested fields support"""
+        rules_dict = {}
+        # Required
+        if getattr(field, 'required', False) and field.required:
+            rules_dict['required'] = field.required
+
+        else:
+            rules_dict['required'] = False
+
+        # min length
+        if getattr(field, 'min_length', False):
+            if field.min_length is not None:
+                rules_dict['minlength'] = field.min_length
+
+        # max length
+        if getattr(field, 'max_length', False):
+            if field.max_length is not None:
+                rules_dict['maxlength'] = field.max_length
+
+        # field same value than...
+        if 'equals' in field.widget.attrs:
+            rules_dict['equalTo'] = "#%s" % field.widget.attrs['equals']
+            equals_field = field.widget.attrs['equals'].replace('id_', '')
+
+        if 'depends' in field.widget.attrs:
+            rules_dict['depends'] = "#%s" % field.widget.attrs['depends']
+
+        # custom JS validation function: use 'custom' attribute value on wiget
+        # see http://stackoverflow.com/questions/241145/jquery-validate-plugin-how-to-create-a-simple-custom-rule
+        if 'custom' in field.widget.attrs:
+            custom = field.widget.attrs['custom']
+            rules_dict[field.widget.attrs['custom']['method']] = custom['value']
+
+        if 'remote' in field.widget.attrs:
+            rules_dict['remote'] = {
+                'url': field.widget.attrs['remote']['url']
+            }
+
+            if 'data' in field.widget.attrs['remote']:
+                rules_dict['remote']['data'] = field.widget.attrs['remote']['data']
+
+        return rules_dict
+
 
 default_msgs = {
     'regex_pattern': 'Pattern does not  match. %s',
@@ -82,6 +162,8 @@ def validate(form, form_id):
     :return:
     """
     validate_str = ""
+    helper = JqueryFormHelper()
+    helper.preprocess_fields(form)
     validate_dict = {'onkeyup': False, 'rules': {}, 'messages': {}, "success": "", 'ignore': '.ignore'}
 
     for field in form:
@@ -105,18 +187,20 @@ def validate(form, form_id):
 
         if 'custom' in field.field.widget.attrs:
             del field.field.widget.attrs["custom"]
-    validate_str += "<script type='text/javascript' src='" + "js/ext/jquery.validate.min.js'></script>"
-    validate_str += "<script type='text/javascript' src='" + "js/ext/additional-methods.min.js'></script>"
+    validate_str += "<script type='text/javascript' src='/js/ext/jquery.validate.min.js'></script>"
+    validate_str += "<script type='text/javascript' src='/js/ext/additional-methods.min.js'></script>"
     validate_str += "<script type='text/javascript'>"
     validate_str += "$(document).ready(function() {"
-    validate_dict['success'] = "##function(label) { " + \
-                               "    label.removeClass('error'); label.parent().removeClass('status-error'); label.remove();" + \
+    validate_dict['success'] = "##function(label) { label.removeClass('error'); " \
+                               "label.parent().removeClass('status-error'); label.remove();" + \
                                "}##"
 
     validate_dict['showErrors'] = "## function(errorMap, errorList) {" + \
                                   "this.defaultShowErrors();" + \
-                                  "$('label.error').parent().addClass('status-error');" + \
-                                  "}##"
+                                  "$('label.error').each(function() {" \
+                                  " $(this).parent().addClass('status-error');" + \
+                                  " $(this).attr('id', 'error_' + $(this).attr('for'));" + \
+                                  "});}##"
     validate_dict['onfocusout'] = "## function(e) {" + \
                                   "this.element(e);" + \
                                   "}##"
