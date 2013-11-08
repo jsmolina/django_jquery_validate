@@ -64,3 +64,37 @@ class JqueryGenTest(TestCase):
         self.assertRegexpMatches(rendered, "'password2': {'minlength': 8, 'required': true, 'maxlength': 30}")
 
         jquery_validate.validate_server(form, 'country')
+
+    def test_multivalue_field(self):
+        RegisterForm = type(
+            "CommentForm",
+            (JqueryForm,),
+            {
+                'email': forms.MultiValueField(
+                    fields=[
+                        forms.CharField(
+                            widget=forms.TextInput(
+                                attrs={'custom': {
+                                    'method': 'required',
+                                    'value': "##function (element) {" +
+                                             "if($(\"#id_" + 'use_operator_' + "phone" + "\").is(\":checked\")) {" +
+                                             " return true;} else { return false;}"
+                                             "}##"}})),
+                        forms.CharField()])})
+        form = RegisterForm()
+        form_rendered1 = form.as_p()
+        rendered = jquery_validate.validate(form, "myformid")
+        self.assertTrue('if($("#id_use_operator_phone").is(":checked"))' in rendered)
+        form_rendered2 = form.as_p()
+        self.assertIsNotNone(form_rendered1)
+        self.assertIsNotNone(form_rendered2)
+
+
+class testTrans(TestCase):
+    def setUp(self):
+        self.trans = Trans('mola', '')
+
+    def test_trans(self):
+        self.assertIsNotNone(self.trans)
+        self.assertIs(self.trans.text, 'mola')
+        self.assertIs(self.trans.params, '')
