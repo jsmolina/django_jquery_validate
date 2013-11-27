@@ -135,6 +135,8 @@ def map_messages(field, validate_dict):
         custom_or_default(field, validate_dict['messages'][field.name], 'invalid', 'url', 'Invalid url')
     elif 'date' in validate_dict['rules'][field.name]:
         custom_or_default(field, validate_dict['messages'][field.name], 'invalid', 'date', 'Invalid date')
+    elif 'time' in validate_dict['rules'][field.name]:
+        custom_or_default(field, validate_dict['messages'][field.name], 'invalid', 'time', 'Invalid time')
     elif 'pattern' in validate_dict['rules'][field.name]:
         custom_or_default(field, validate_dict['messages'][field.name], 'regex_pattern', 'pattern', '')
 
