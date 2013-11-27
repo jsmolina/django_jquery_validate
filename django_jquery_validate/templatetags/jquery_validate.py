@@ -18,6 +18,9 @@ class JqueryFormHelper(object):
             elif isinstance(form.fields[key], forms.fields.DateField):
                 field_dict['date'] = True
 
+            elif isinstance(form.fields[key], forms.fields.TimeField):
+                field_dict['time'] = True
+
             elif isinstance(form.fields[key], forms.fields.URLField):
                 field_dict['url'] = True
 
